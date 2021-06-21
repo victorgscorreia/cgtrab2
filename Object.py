@@ -50,11 +50,8 @@ class Object:
             # desenha o modelo
             glDrawArrays(GL_TRIANGLES, self.ini_textures[i], self.num_vertices_textures[i]) ## renderizando
 
-    def update_position(tx, ty, tz, theta, phi, s):
+    def update_position(self, tx, ty, tz):
         self.tx = tx
         self.ty = ty
         self.tz = tz
-        self.theta = theta
-        self.phi = phi
-        self.s = s
     

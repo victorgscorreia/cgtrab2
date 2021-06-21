@@ -25,6 +25,19 @@ def model(theta, phi, gamma ,t_x, t_y, t_z, s):
     
     return matrix_transform
 
+def view(cameraPos, cameraFront, cameraUp):
+    mat_view = glm.lookAt(cameraPos, cameraPos + cameraFront, cameraUp)
+    mat_view = np.array(mat_view)
+    
+    return mat_view
+
+def projection(altura, largura, fov, near, far):
+    fov_ = glm.radians(fov)
+    # perspective parameters: fovy, aspect, near, far
+    mat_projection = glm.perspective(fov_, largura/altura, near, far)
+    mat_projection = np.array(mat_projection)    
+    return mat_projection
+
 def load_model_from_file(filename):
     """Loads a Wavefront OBJ file. """
     objects = {}
