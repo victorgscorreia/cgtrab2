@@ -6,6 +6,20 @@ import glm
 import math
 from PIL import Image
 
+'''
+Esta funcao cria a matriz model de um objeto, atra ves dos parametros de 
+transformacao passados.
+@PARAMETROS
+    theta - parametro da matriz model - angulo de rotacao no eixo z.
+    phi - parametro da matriz model - angulo de rotacao no eixo x.
+    gamma - parametro da matriz model - angulo de rotacao no eixo y.
+    t_x - parametro da matriz model - transladacao em x
+    t_y - parametro da matriz model - transladacao em y
+    t_z - parametro da matriz model - transladacao em z
+    s - parametro da matriz model - escala uniforme
+@RETORNO
+    numpy array - matriz model.
+'''
 def model(theta, phi, gamma ,t_x, t_y, t_z, s):
     
     matrix_transform = glm.mat4(1.0) # instanciando uma matriz identidade
@@ -25,12 +39,28 @@ def model(theta, phi, gamma ,t_x, t_y, t_z, s):
     
     return matrix_transform
 
+'''
+Esta funcao cria a matriz view da camera, atraves dos parametros passados
+@PARAMETROS
+    cameraPos - posicao da camera
+    cameraFront - direcao que a camera esta olhando
+    cameraUp - Direcao que aponta para cima da camera
+'''
 def view(cameraPos, cameraFront, cameraUp):
     mat_view = glm.lookAt(cameraPos, cameraPos + cameraFront, cameraUp)
     mat_view = np.array(mat_view)
     
     return mat_view
 
+'''
+Esta funcao cria a matriz projection da camera, atraves dos parametros passados
+@PARAMETROS
+    altura - altura da janela
+    largura - largura da janela
+    fov - fov da camera
+    near - a partir de qual distancia a camera comeca a "ver".
+    far - ate qual distancia a camera consegue "ver".
+'''
 def projection(altura, largura, fov, near, far):
     fov_ = glm.radians(fov)
     # perspective parameters: fovy, aspect, near, far
@@ -38,6 +68,11 @@ def projection(altura, largura, fov, near, far):
     mat_projection = np.array(mat_projection)    
     return mat_projection
 
+'''
+Esta funcao le um objeto de um .obj.
+@PARAMETROS
+    filename - nome do arquivo .obj
+'''
 def load_model_from_file(filename):
     """Loads a Wavefront OBJ file. """
     objects = {}
@@ -86,6 +121,12 @@ def load_model_from_file(filename):
 
     return model
 
+'''
+Esta funcao le uma textura de um arquivo de textura.
+@PARAMETROS
+    texture_id - a qual id de textura a textura lida sera atribuida.
+    img_textura - nome do arquivo de textura
+'''
 def load_texture_from_file(texture_id, img_textura):
     glBindTexture(GL_TEXTURE_2D, texture_id)
     glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT)

@@ -17,6 +17,7 @@ from Sword import *
 from Chao import *
 from Ceu import *
 
+#parametros da janela
 polygonal_mode = False
 altura = 1600
 largura = 1200 
@@ -31,13 +32,20 @@ cameraPos   = glm.vec3(3.0,  4.0,  -25.0)
 cameraFront = glm.vec3(0.0,  0.0, -1.0)
 cameraUp    = glm.vec3(0.0,  1.0,  0.0)
 
+#parametros da matriz projection
 fov = 85
 near = 0.1
 far = 65
 
 stop = False
 
+'''
+Esta funcao faz a verificao se a camera 
+ainda se mantem dentro dos limites do mundo,
+nao permitindo que a camera ultrapasse os limites.
+'''
 def check_colision_camera():
+    #valores maximos e minimos da posicao da camera para cada coordenada
     MAX_X, MAX_Y, MAX_Z = 48, 48, 48
     MIN_X, MIN_Y, MIN_Z = -48, 2, -48
     global cameraPos
@@ -56,8 +64,13 @@ def check_colision_camera():
     elif cameraPos.z <= MIN_Z:
         cameraPos.z = MIN_Z
 
+'''
+Esta funcao verifica se os parametros da matriz de 
+projecao estao dentro limites estipulados.
+'''
 def check_projection_camera():
     global fov, near, far
+    #valores maximos e minimos dos parametros fov, near e far
     MAX_FOV, MAX_NEAR, MAX_FAR = 180, 200, 200
     MIN_FOV, MIN_NEAR, MIN_FAR = 1, 0.1, 0.1
 
@@ -76,7 +89,9 @@ def check_projection_camera():
     elif far <= MIN_FAR:
         far = MIN_FAR
     
-
+'''
+Funcao de evento do teclado
+'''
 def key_event(window,key,scancode,action,mods):
     global cameraPos, cameraFront, cameraUp, polygonal_mode
     global fov, near, far
@@ -126,7 +141,10 @@ def key_event(window,key,scancode,action,mods):
         stop = True
     check_colision_camera()
     check_projection_camera()
-        
+
+'''
+Funcao de evento do mouse
+'''
 def mouse_event(window, xpos, ypos):
     global firstMouse, cameraFront, yaw, pitch, lastX, lastY
     if firstMouse:
@@ -156,10 +174,15 @@ def mouse_event(window, xpos, ypos):
     front.z = math.sin(glm.radians(yaw)) * math.cos(glm.radians(pitch))
     cameraFront = glm.normalize(front)
 
+'''
+fluxo principal do programa
+'''
 def main():
+    #linkando os valores globais
     global altura, largura
     global cameraPos, cameraFront, cameraUp
     global fov, near, far
+
     glfw.init()
     glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
     window = glfw.create_window(largura, altura, "Malhas e Texturas", None, None)
