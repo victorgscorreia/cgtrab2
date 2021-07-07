@@ -28,17 +28,14 @@ Para se alterar o Near da matriz projection, utilizes as teclas C e V.
 
 Para se alterar entre o modo padrao, e a visualizacao da malha poligonal, aperte a tecla P.
 
-## Compilação
+## Instalando Bibliotecas
 
-Para compilar o código pode ser utilizar o comando ‘make’ do Makefile
-```
-$ make
-```
+Para a execução correta deste projeto, instale o PyGLM na versão 1.1.8
 
 ## Executando o programa
-Para executar o programa pode ser utilizar o comando ‘make run’ do Makefile
+Para executar o programa, utilize o seguinte comando no terminal:
 ```
-$ ./run
+$ python3 main.py
 ```
 
 ## Vídeo
