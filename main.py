@@ -16,6 +16,8 @@ from Table import *
 from Sword import *
 from Chao import *
 from Ceu import *
+from Luz_Interna import *
+from Luz_Externa import *
 
 #parametros da janela
 polygonal_mode = False
@@ -38,6 +40,31 @@ near = 0.1
 far = 65
 
 stop = False
+
+luz_ambiente_externo_intencidade = 1.0
+luz_interno_intencidade = 1.0
+
+
+'''
+Esta funcao faz a verificao se a intencidade da luz
+interna e externa esta no intervalo [0,1]
+nao permitindo que ultrapasse estes intervalos
+.
+'''
+def check_limite_luz():
+    global luz_ambiente_externo_intencidade
+    global luz_interno_intencidade
+    if luz_ambiente_externo_intencidade >= 1.0:
+        luz_ambiente_externo_intencidade = 1.0
+    
+    if luz_ambiente_externo_intencidade <= 0.0:
+        luz_ambiente_externo_intencidade = 0.0
+    
+    if luz_interno_intencidade >= 1.0:
+        luz_interno_intencidade = 1.0
+    
+    if luz_interno_intencidade <= 0.0:
+        luz_interno_intencidade = 0.0
 
 '''
 Esta funcao faz a verificao se a camera 
@@ -96,6 +123,8 @@ def key_event(window,key,scancode,action,mods):
     global cameraPos, cameraFront, cameraUp, polygonal_mode
     global fov, near, far
     global stop
+    global luz_interno_intencidade
+    global luz_ambiente_externo_intencidade
     cameraSpeed = 0.2
     #movimentando camera
     if key == 87 and (action==1 or action==2): # tecla W
@@ -136,9 +165,24 @@ def key_event(window,key,scancode,action,mods):
     if key == 71 and (action==1 or action==2): #tecla G
         fov += cameraSpeed
 
+    intencidade_speed = 0.02
+    if key == 85 and (action==1 or action==2): #letra U
+        luz_ambiente_externo_intencidade -= intencidade_speed
+    
+    if key == 73 and (action==1 or action==2):
+        luz_ambiente_externo_intencidade += intencidade_speed
+
+    if key == 75 and (action==1 or action==2):
+        luz_interno_intencidade -= intencidade_speed
+    
+    if key == 76 and (action==1 or action==2):
+        luz_interno_intencidade += intencidade_speed
+
     #fechando janela
     if key == 81 and action == 1:
         stop = True
+
+    check_limite_luz()
     check_colision_camera()
     check_projection_camera()
 
@@ -182,6 +226,8 @@ def main():
     global altura, largura
     global cameraPos, cameraFront, cameraUp
     global fov, near, far
+    global luz_ambiente_externo_intencidade
+    global luz_interno_intencidade
 
     glfw.init()
     glfw.window_hint(glfw.VISIBLE, glfw.FALSE)
@@ -189,30 +235,73 @@ def main():
     glfw.make_context_current(window)
 
     vertex_code = """
-            attribute vec3 position;
-            attribute vec2 texture_coord;
-            varying vec2 out_texture;
-                    
-            uniform mat4 model;
-            uniform mat4 view;
-            uniform mat4 projection;        
-            
-            void main(){
-                gl_Position = projection * view * model * vec4(position,1.0);
-                out_texture = vec2(texture_coord);
-            }
-            """
+        attribute vec3 position;
+        attribute vec2 texture_coord;
+        attribute vec3 normals;
+        
+       
+        varying vec2 out_texture;
+        varying vec3 out_fragPos;
+        varying vec3 out_normal;
+                
+        uniform mat4 model;
+        uniform mat4 view;
+        uniform mat4 projection;        
+        
+        void main(){
+            gl_Position = projection * view * model * vec4(position,1.0);
+            out_texture = vec2(texture_coord);
+            out_fragPos = vec3(  model * vec4(position, 1.0));
+            out_normal = vec3( model *vec4(normals, 1.0));            
+        }
+        """
 
     fragment_code = """
-            uniform vec4 color;
-            varying vec2 out_texture;
-            uniform sampler2D samplerTexture;
+
+        // parametro com a cor da(s) fonte(s) de iluminacao
+        uniform vec3 lightPos; // define coordenadas de posicao da luz
+        uniform vec3 lightAmbiente;
+        uniform vec3 lightIncidente;
+        
+        // parametros da iluminacao ambiente e difusa
+        uniform vec3 ka; // coeficiente de reflexao ambiente
+        uniform vec3 kd; // coeficiente de reflexao difusa
+        
+        // parametros da iluminacao especular
+        uniform vec3 viewPos; // define coordenadas com a posicao da camera/observador
+        uniform vec3 ks; // coeficiente de reflexao especular
+        uniform float ns; // expoente de reflexao especular
+        
+        // parametros recebidos do vertex shader
+        varying vec2 out_texture; // recebido do vertex shader
+        varying vec3 out_normal; // recebido do vertex shader
+        varying vec3 out_fragPos; // recebido do vertex shader
+        uniform sampler2D samplerTexture;
+        
+        void main(){
+        
+            // calculando reflexao ambiente
+            vec3 ambient = ka * lightAmbiente;             
+        
+            // calculando reflexao difusa
+            vec3 norm = normalize(out_normal); // normaliza vetores perpendiculares
+            vec3 lightDir = normalize(lightPos - out_fragPos); // direcao da luz
+            float diff = max(dot(norm, lightDir), 0.0); // verifica limite angular (entre 0 e 90)
+            vec3 diffuse = kd * diff * lightIncidente; // iluminacao difusa
             
-            void main(){
-                vec4 texture = texture2D(samplerTexture, out_texture);
-                gl_FragColor = texture;
-            }
-            """
+            // calculando reflexao especular
+            vec3 viewDir = normalize(viewPos - out_fragPos); // direcao do observador/camera
+            vec3 reflectDir = normalize(reflect(-lightDir, norm)); // direcao da reflexao
+            float spec = pow(max(dot(viewDir, reflectDir), 0.0), ns);
+            vec3 specular = ks * spec * lightIncidente;             
+            
+            // aplicando o modelo de iluminacao
+            vec4 texture = texture2D(samplerTexture, out_texture);
+            vec4 result = vec4((ambient + diffuse + specular),1.0)*texture; // aplica iluminacao
+            gl_FragColor = result;
+
+        }
+        """
 
     # Request a program and shader slots from GPU
     program  = glCreateProgram()
@@ -259,24 +348,27 @@ def main():
 
     vertices_list = []    
     textures_coord_list = []
+    normals_list = [] 
 
     id_tex_livre = [0]
 
     #======================= CRIA OS OBJETOS ================================
-    chao = cria_chao(id_tex_livre, vertices_list, textures_coord_list)
-    carro = cria_carro(id_tex_livre, vertices_list, textures_coord_list)
-    casa = cria_casa(id_tex_livre, vertices_list, textures_coord_list)
-    placa = cria_placa(id_tex_livre, vertices_list, textures_coord_list)
-    arvore = cria_arvore(id_tex_livre, vertices_list, textures_coord_list)
-    mesa = cria_table(id_tex_livre, vertices_list, textures_coord_list)
-    tabuleiro = cria_chessboard(id_tex_livre, vertices_list, textures_coord_list)
-    espada = cria_sword(id_tex_livre, vertices_list, textures_coord_list)
-    ceu = cria_ceu(id_tex_livre, vertices_list, textures_coord_list)
+    chao = cria_chao(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    carro = cria_carro(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    casa = cria_casa(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    placa = cria_placa(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    arvore = cria_arvore(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    mesa = cria_table(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    tabuleiro = cria_chessboard(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    espada = cria_sword(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    ceu = cria_ceu(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    luz_interna = cria_luz_interna(id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    luz_externa = cria_luz_externa(id_tex_livre, vertices_list, textures_coord_list, normals_list)
     #=========================================================================
 
 
     # Request a buffer slot from GPU
-    buffer = glGenBuffers(2)
+    buffer = glGenBuffers(3)
 
     vertices = np.zeros(len(vertices_list), [("position", np.float32, 3)])
     vertices['position'] = vertices_list
@@ -305,6 +397,19 @@ def main():
     glEnableVertexAttribArray(loc_texture_coord)
     glVertexAttribPointer(loc_texture_coord, 2, GL_FLOAT, False, stride, offset)   
 
+    normals = np.zeros(len(normals_list), [("position", np.float32, 3)]) # três coordenadas
+    normals['position'] = normals_list
+
+
+    # Upload coordenadas normals de cada vertice
+    glBindBuffer(GL_ARRAY_BUFFER, buffer[2])
+    glBufferData(GL_ARRAY_BUFFER, normals.nbytes, normals, GL_STATIC_DRAW)
+    stride = normals.strides[0]
+    offset = ctypes.c_void_p(0)
+    loc_normals_coord = glGetAttribLocation(program, "normals")
+    glEnableVertexAttribArray(loc_normals_coord)
+    glVertexAttribPointer(loc_normals_coord, 3, GL_FLOAT, False, stride, offset)
+
         
     glfw.set_key_callback(window,key_event)
     glfw.set_cursor_pos_callback(window, mouse_event)
@@ -321,6 +426,29 @@ def main():
     speed_carro = 1
     pos_carro = 0
 
+    #definindo valores luz externa
+    lightAmbExt = np.zeros((3,))
+    lightAmbExt[0] = 1.0
+    lightAmbExt[1] = 1.0
+    lightAmbExt[2] = 1.0
+
+    lightIncExt = np.zeros((3,))
+    lightIncExt[0] = 1.0
+    lightIncExt[1] = 1.0
+    lightIncExt[2] = 1.0
+
+
+    #definindo valores luz interna
+    lightAmbInt = np.zeros((3,))
+    lightAmbInt[0] = 0.0
+    lightAmbInt[1] = 1.0
+    lightAmbInt[2] = 1.0
+
+    lightIncInt = np.zeros((3,))
+    lightIncInt[0] = 0.0
+    lightIncInt[1] = 1.0
+    lightIncInt[2] = 1.0
+
     while not glfw.window_should_close(window):
 
         glfw.poll_events() 
@@ -334,7 +462,8 @@ def main():
         if polygonal_mode==False:
             glPolygonMode(GL_FRONT_AND_BACK,GL_FILL)
         
-        
+        loc_view_pos = glGetUniformLocation(program, "viewPos") # recuperando localizacao da variavel viewPos na GPU
+        glUniform3f(loc_view_pos, cameraPos[0], cameraPos[1], cameraPos[2]) ### posicao da camera/observador (x,y,z)
         #====================== MOVIMENTANDO CARRO =================================
         pos_carro += speed_carro
         if pos_carro >= max_pos_carro:
@@ -344,16 +473,47 @@ def main():
             pos_carro = min_pos_carro
             speed_carro *= -1
 
-        carro.update_position(0,pos_carro,0)
+        carro.update_position(0,pos_carro,0, False, program)
+        #===========================================================================
+        
+
+        #====================== CARREGA LUZ EXTERNA ================================
+        loc_light_amb = glGetUniformLocation(program, "lightAmbiente")
+        loc_light_inc = glGetUniformLocation(program, "lightIncidente")
+
+        le = luz_ambiente_externo_intencidade
+        #setando os valores desta luz nos parametros da gpu
+        glUniform3f(loc_light_amb, le*lightAmbExt[0], le*lightAmbExt[1], le*lightAmbExt[2])
+        glUniform3f(loc_light_inc, lightIncExt[0], lightIncExt[1], lightIncExt[2])
+
+        luz_externa.update_position(16.5 - pos_carro,6,0, True, program)
+        luz_externa.draw(program)
         #===========================================================================
 
-        #======================= DESENHA OS OBJETOS ================================
+        #======================= DESENHA OS OBJETOS INTERNOS =======================
         ceu.draw(program)
         chao.draw(program)
         carro.draw(program)
         casa.draw(program)
         placa.draw(program)
         arvore.draw(program)
+        
+        #===========================================================================
+
+        #====================== CARREGA LUZ INTERNA ================================
+        loc_light_amb = glGetUniformLocation(program, "lightAmbiente")
+        loc_light_inc = glGetUniformLocation(program, "lightIncidente")
+
+        li = luz_interno_intencidade
+        #setando os valores desta luz nos parametros da gpu
+        glUniform3f(loc_light_amb, li*lightAmbInt[0], li*lightAmbInt[1], li*lightAmbInt[2])
+        glUniform3f(loc_light_inc, li*lightIncInt[0], li*lightIncInt[1], li*lightIncInt[2])
+
+        luz_interna.update_position(0,1,-30, True, program)
+        luz_interna.draw(program)
+        #===========================================================================
+
+        #======================= DESENHA OS OBJETOS INTERNOS =======================
         mesa.draw(program)
         tabuleiro.draw(program)
         espada.draw(program)

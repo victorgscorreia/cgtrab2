@@ -77,6 +77,7 @@ def load_model_from_file(filename):
     """Loads a Wavefront OBJ file. """
     objects = {}
     vertices = []
+    normals = []
     texture_coords = []
     faces = []
 
@@ -93,6 +94,9 @@ def load_model_from_file(filename):
         if values[0] == 'v':
             vertices.append(values[1:4])
 
+        ### recuperando normais
+        if values[0] == 'vn':
+            normals.append(values[1:4])
 
         ### recuperando coordenadas de textura
         elif values[0] == 'vt':
@@ -104,22 +108,80 @@ def load_model_from_file(filename):
         elif values[0] == 'f':
             face = []
             face_texture = []
+            face_normals = []
             for v in values[1:]:
                 w = v.split('/')
                 face.append(int(w[0]))
+                face_normals.append(int(w[2]))
                 if len(w) >= 2 and len(w[1]) > 0:
                     face_texture.append(int(w[1]))
                 else:
                     face_texture.append(0)
 
-            faces.append((face, face_texture, material))
+            faces.append((face, face_texture, face_normals, material))
 
     model = {}
     model['vertices'] = vertices
     model['texture'] = texture_coords
     model['faces'] = faces
+    model['normals'] = normals
 
     return model
+
+'''
+Esta funcao le os parametros de iluminacao
+das texturas de um objeto, atraves do arquivo .mtl,
+esses parametros sendo ka, kd, ks e ns
+'''
+def load_mtl_file(filename):
+
+    #inicialianzo as lista que armazenaram os valores
+    kas = []
+    kds = []
+    kss = []
+    nss = []
+
+    # abre o arquivo obj para leitura
+    for line in open(filename, "r"): ## para cada linha do arquivo .mtl
+        if line.startswith('#'): continue ## ignora comentarios
+        values = line.split() # quebra a linha por espaço
+        if not values: continue
+
+        #se a linha comecar com ka, le o vetor de tamanho 3 que o representa
+        if values[0] == "Ka":
+            ka = []
+            for v in values[1:]:
+                ka.append(float(v))
+            kas.append(ka)
+        
+        #se a linha comecar com kd, le o vetor de tamanho 3 que o representa
+        if values[0] == "Kd":
+            kd = []
+            for v in values[1:]:
+                kd.append(float(v))
+            kds.append(kd)
+
+        #se a linha comecar com ks, le o vetor de tamanho 3 que o representa
+        if values[0] == "Ks":
+            ks = []
+            for v in values[1:]:
+                ks.append(float(v))
+            kss.append(ks)
+        
+        #se a linha comecar com Ns, le o valor real que o representa
+        elif values[0] == "Ns":
+            for v in values[1:]:
+                nss.append(float(v))
+
+    #inicilizando o dicionario de retorno
+    ilu = {}
+    #atribuindo ao dicionario as listas
+    ilu['kas'] = kas
+    ilu['kds'] = kds
+    ilu['kss'] = kss
+    ilu['nss'] = nss
+    #retornando
+    return ilu
 
 '''
 Esta funcao le uma textura de um arquivo de textura.
