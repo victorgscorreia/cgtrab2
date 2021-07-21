@@ -16,7 +16,7 @@ def cria_ceu(id_tex_livre, vertices_list, textures_coord_list, normals_list):
     textures_names = []
     textures_names.append("Ceu/toy_story.jpg")
     filename = "Ceu/ceu.obj"
-    mtl_filename = "Table/table.mtl"
+    mtl_filename = "Ceu/ceu.mtl"
     #criando o objeto
     chao = Object(filename, mtl_filename, textures_names, 0, 0, 0, 0, 0, 0, 50.0, id_tex_livre, vertices_list, textures_coord_list, normals_list)
 
