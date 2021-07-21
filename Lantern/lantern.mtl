@@ -1,0 +1,26 @@
+# Blender MTL File: 'tarnished-lantern-low-poly.blend'
+# Material Count: 2
+
+newmtl bodyLANTERNMAT
+Ns 272.249982
+Ka 1.000000 1.000000 1.000000
+Kd 0.429226 0.429226 0.429226
+Ks 0.250000 0.250000 0.250000
+Ke 0.000000 0.000000 0.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump LanternNormalMap.png
+map_Kd textures\\__Metal_Silver_1.jpg
+
+newmtl emissionBULBMAT
+Ns 841.000029
+Ka 0.208333 0.208333 0.208333
+Kd 0.643137 0.698039 0.733333
+Ks 0.658333 0.658333 0.658333
+Ke 1.000000 1.000000 1.000000
+Ni 1.450000
+d 1.000000
+illum 3
+map_Bump LanternNormalMap.png
+map_Kd textures\\__Metal_Silver_1.jpg

@@ -41,7 +41,7 @@ far = 65
 
 stop = False
 
-luz_ambiente_externo_intencidade = 1.0
+luz_ambiente_externo_intencidade = 0.3
 luz_interno_intencidade = 1.0
 
 
@@ -440,12 +440,12 @@ def main():
 
     #definindo valores luz interna
     lightAmbInt = np.zeros((3,))
-    lightAmbInt[0] = 0.0
+    lightAmbInt[0] = 1.0
     lightAmbInt[1] = 1.0
     lightAmbInt[2] = 1.0
 
     lightIncInt = np.zeros((3,))
-    lightIncInt[0] = 0.0
+    lightIncInt[0] = 1.0
     lightIncInt[1] = 1.0
     lightIncInt[2] = 1.0
 
@@ -509,7 +509,7 @@ def main():
         glUniform3f(loc_light_amb, li*lightAmbInt[0], li*lightAmbInt[1], li*lightAmbInt[2])
         glUniform3f(loc_light_inc, li*lightIncInt[0], li*lightIncInt[1], li*lightIncInt[2])
 
-        luz_interna.update_position(0,1,-30, True, program)
+        luz_interna.update_position(3.3,3.3,-30, True, program)
         luz_interna.draw(program)
         #===========================================================================
 

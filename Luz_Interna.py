@@ -14,10 +14,11 @@ Esta funcao cria um objeto do tipo Luz Interna e o retorna
 def cria_luz_interna(id_tex_livre, vertices_list, textures_coord_list, normals_list):
     #adicionando os nomes das texturas utilizdas em uma lista
     textures_names = []
-    textures_names.append("Luz_Interna/luz_interna.png")
-    filename = "Luz_Interna/luz_interna.obj"
-    mtl_filename = "Luz_Interna/luz_interna.mtl"
+    textures_names.append("Lantern/texture_high.png")
+    textures_names.append("Lantern/texture_high.png")
+    filename = "Lantern/lantern.obj"
+    mtl_filename = "Lantern/lantern.mtl"
     #criando o objeto
-    luz = Object(filename, mtl_filename, textures_names, 0, 0, 0, 0, 0, 0, 0.1, id_tex_livre, vertices_list, textures_coord_list, normals_list)
+    luz = Object(filename, mtl_filename, textures_names, 0, 0, 0, 0, 0, 0, 1, id_tex_livre, vertices_list, textures_coord_list, normals_list)
 
     return luz
