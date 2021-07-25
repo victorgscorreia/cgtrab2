@@ -28,6 +28,14 @@ Para se alterar o Near da matriz projection, utilizes as teclas C e V.
 
 Para se alterar entre o modo padrao, e a visualizacao da malha poligonal, aperte a tecla P.
 
+### Luz ambiente externo
+
+Para se alterar a luz ambiente externo, utilize as teclas U e I.
+
+### Luz ambiente interno
+
+Para se alterar a luz ambiente interno, utilize as teclas K e L.
+
 ## Instalando Bibliotecas
 
 Para a execução correta deste projeto, instale o PyGLM na versão 1.1.8
