@@ -48,7 +48,7 @@ $ python3 main.py
 
 ## Vídeo
 Um vídeo de apresentação rápida do projeto pode ser encontrado no seguinte link:
-[Vídeo](https://youtu.be/ZnhFCyw3bBg)
+[Vídeo](https://drive.google.com/file/d/1vjHfc2zPi1DkXT4TFncHHl1yQN6Oq-Xa/view)
 ## Membros
 Luan Ícaro Pinto Arcanjo 10799230  
 Rodrigo Cesar Arboleda 10416722  
